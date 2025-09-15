@@ -1,0 +1,96 @@
+[workspace]
+members = ["zelus", "zelus_macros"]
+resolver = "3"
+
+[workspace.dependencies]
+zelus_macros.path = "zelus_macros"
+
+[workspace.lints.rust]
+unused = { level = "deny", priority = -1 }
+private_bounds = "allow"
+deprecated = "warn"
+nonstandard-style = "deny"
+let-underscore = "allow"
+refining-impl-trait = "deny"
+keyword-idents = "deny"
+future-incompatible = "deny"
+
+[workspace.lints.clippy]
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "deny", priority = -1 }
+complexity = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -1 }
+style = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+
+too_many_arguments = "allow"
+implicit_return = "allow"
+field_scoped_visibility_modifiers = "allow"
+single_call_fn = "allow"
+question_mark_used = "allow"
+mod_module_files = "allow"
+self_named_module_files = "allow"
+ref_patterns = "allow"
+pattern_type_mismatch = "allow"
+iter_over_hash_type = "allow"
+inline_always = "allow"
+absolute_paths = "allow"
+std_instead_of_alloc = "allow"
+used_underscore_binding = "allow"
+exhaustive_enums = "allow"
+exhaustive_structs = "allow"
+missing_inline_in_public_items = "allow"
+missing_trait_methods = "allow"
+partial_pub_fields = "allow"
+pub_use = "allow"
+single_char_lifetime_names = "allow"
+use_debug = "allow"
+needless_raw_strings = "allow"
+arbitrary_source_item_ordering = "allow"
+module_name_repetitions = "allow"
+wildcard_imports = "allow"
+impl_trait_in_params = "allow"
+float_arithmetic = "allow"
+single_match_else = "allow"
+missing-assert-message = "allow"
+
+significant_drop_in_scrutinee = "allow"
+
+renamed_function_params = "allow"
+min_ident_chars = "deny"
+
+wildcard_enum_match_arm = "allow"
+
+let_underscore_must_use = "allow"
+let_underscore_untyped = "allow"
+
+todo = "warn"
+unimplemented = "allow"
+
+shadow_reuse = "allow"
+shadow_unrelated = "allow"
+
+pub_with_shorthand = "allow"
+pub_without_shorthand = "forbid"
+
+unseparated_literal_suffix = "allow"
+separated_literal_suffix = "forbid"
+
+semicolon_inside_block = "allow"
+semicolon_outside_block = "deny"
+
+missing_docs_in_private_items = "allow"
+allow_attributes_without_reason = "allow"
+too_many_lines = "allow"
+unwrap_in_result = "allow"
+expect_used = "allow"
+as_conversions = "allow"
+cast_possible_truncation = "allow"
+cognitive_complexity = "allow"
+multiple_inherent_impl = "allow"
+integer_division_remainder_used = "allow"
+redundant_pub_crate = "allow"
+
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"

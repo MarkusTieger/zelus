@@ -1,0 +1,30 @@
+[package]
+name = "zelus_macros"
+version = "0.1.0"
+edition = "2024"
+authors = ["Markus Probst <markus.probst@posteo.de>"]
+license = "AGPL-3.0-only"
+
+[features]
+service = []
+error = []
+
+sqlx = []
+io = []
+redis = []
+
+[lints]
+workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = "2"
+manyhow = "0.11.4"
+either = "1.15"
+itertools = "0.14"
+indexmap = "2.11"
+convert_case = "0.8"

@@ -1,0 +1,50 @@
+[package]
+name = "zelus"
+version = "0.1.0"
+edition = "2024"
+authors = ["Markus Probst <markus.probst@posteo.de>"]
+license = "AGPL-3.0-only"
+
+[features]
+error = ["zelus_macros/error"]
+default = ["error", "io"]
+
+sqlx = ["zelus_macros/sqlx", "dep:sqlx"]
+io = ["zelus_macros/io"]
+redis = ["zelus_macros/redis", "dep:redis"]
+
+[lints]
+workspace = true
+
+[dependencies]
+zelus_macros = { workspace = true, features = ["service"] }
+axum = { version = "0.8", features = ["ws"] }
+utoipa = "5"
+http = "1"
+futures-util = "0.3"
+reqwest = { version = "0.12", features = ["json", "stream"] }
+tokio-util = { version = "0.7", features = ["io-util"] }
+bytes = "1.10"
+tokio = "1"
+pastey = "0.1"
+axum-extra = { version = "0.10", features = ["typed-header"] }
+serde = "1.0"
+serde_json = "1.0"
+async-trait = "0.1"
+url = "2.5"
+utoipa-axum = "0.2"
+serde_urlencoded = "0.7"
+thiserror = "2.0"
+urlencoding = "2.1"
+tap = "1.0"
+tower-layer = "0.3"
+tower-service = "0.3"
+
+# Let the user of this crate decide the version
+sqlx = { version = "*", optional = true }
+redis = { version = "*", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+
+
