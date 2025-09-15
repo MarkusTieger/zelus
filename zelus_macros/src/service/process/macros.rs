@@ -24,7 +24,7 @@ pub struct MacroProcessResult {
     pub pre_fn_result: Vec<TokenTree>,
     pub route_args: RouteArgs,
     pub example: Option<LitStr>,
-    pub doc: Option<Literal>,
+    pub doc: Vec<Literal>,
 }
 
 pub fn process(
@@ -40,7 +40,7 @@ pub fn process(
     let mut route_args = None;
     let mut pre_fn_result0 = VecDeque::new();
     let mut pre_fn_result1 = Vec::new();
-    let mut description = None;
+    let mut description = Vec::new();
     let mut example = None;
 
     let result_edited = if result.is_empty() {
@@ -104,7 +104,7 @@ pub fn process(
                     && punct.as_char() == '='
                     && let Some(TokenTree::Literal(lit)) = macro_inner.pop_front()
                 {
-                    description = Some(lit);
+                    description.push(lit);
                 }
                 pre_fn_result0.push_back(pre_fn_tree);
                 pre_fn_result0.push_back(TokenTree::Group(group));

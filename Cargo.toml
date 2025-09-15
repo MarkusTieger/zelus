@@ -13,7 +13,7 @@ nonstandard-style = "deny"
 let-underscore = "allow"
 refining-impl-trait = "deny"
 keyword-idents = "deny"
-future-incompatible = "deny"
+future-incompatible = "allow"
 
 [workspace.lints.clippy]
 correctness = { level = "deny", priority = -1 }

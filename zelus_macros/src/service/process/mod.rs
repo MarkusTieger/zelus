@@ -28,8 +28,9 @@ use crate::service::utils::{TokenStreamArray, parse_function_argument, type_opti
 use core::fmt::{Display, Formatter};
 use core::str::FromStr;
 use either::Either;
+use itertools::Itertools;
 use manyhow::{Emitter, ErrorMessage};
-use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::quote;
 use std::collections::{HashMap, VecDeque};
 use syn::LitStr;
@@ -173,8 +174,15 @@ pub fn process(
         &mut result,
     )?;
 
-    if let Some(desc) = &doc {
-        operations.extend(quote! { operations = operations.description(Some(#desc)); });
+    if !doc.is_empty() {
+        let desc: TokenStream = doc
+            .into_iter()
+            .intersperse(Literal::character('\n'))
+            .map(TokenTree::Literal)
+            .intersperse(TokenTree::Punct(Punct::new(',', Spacing::Joint)))
+            .collect();
+
+        operations.extend(quote! { operations = operations.description(Some(concat!(#desc))); });
     }
 
     let path = if absolute {
