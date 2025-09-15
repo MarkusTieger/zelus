@@ -179,7 +179,7 @@ pub fn process(
 
         let desc: TokenStream = doc
             .into_iter()
-            .intersperse(Literal::character('\n'))
+            .intersperse(Literal::string("<br/>\n"))
             .map(|literal| {
                 let Ok(str) = syn::parse2::<LitStr>(
                     core::iter::once(TokenTree::Literal(literal.clone())).collect(),
@@ -187,7 +187,7 @@ pub fn process(
                     return literal;
                 };
                 if str.value().chars().all(|ch| ch == ' ') {
-                    Literal::string("<br/>")
+                    Literal::string("")
                 } else {
                     literal
                 }
