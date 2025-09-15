@@ -29,6 +29,7 @@ use core::fmt::{Display, Formatter};
 use core::str::FromStr;
 use either::Either;
 use itertools::Itertools;
+use lazy_regex::regex_replace_all;
 use manyhow::{Emitter, ErrorMessage};
 use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::quote;
@@ -189,7 +190,11 @@ pub fn process(
                 if str.value().chars().all(|ch| ch == ' ') {
                     Literal::string("")
                 } else {
-                    literal
+                    Literal::string(&regex_replace_all!(
+                        "\\[\\`(.*)\\`\\]",
+                        &str.value(),
+                        |_, inner| format!("`{inner}`")
+                    ))
                 }
             })
             .map(TokenTree::Literal)
