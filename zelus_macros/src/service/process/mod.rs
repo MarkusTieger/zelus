@@ -180,6 +180,18 @@ pub fn process(
         let desc: TokenStream = doc
             .into_iter()
             .intersperse(Literal::character('\n'))
+            .map(|literal| {
+                let Ok(str) = syn::parse2::<LitStr>(
+                    core::iter::once(TokenTree::Literal(literal.clone())).collect(),
+                ) else {
+                    return literal;
+                };
+                if str.value().chars().all(|ch| ch == ' ') {
+                    Literal::string("<br/>")
+                } else {
+                    literal
+                }
+            })
             .map(TokenTree::Literal)
             .intersperse(TokenTree::Punct(Punct::new(',', Spacing::Joint)))
             .collect();
