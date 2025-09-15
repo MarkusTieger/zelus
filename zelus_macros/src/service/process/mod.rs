@@ -174,7 +174,9 @@ pub fn process(
         &mut result,
     )?;
 
-    if !doc.is_empty() {
+    if let Some(summary) = doc.first() {
+        operations.extend(quote! { operations = operations.summary(Some(#summary)); });
+
         let desc: TokenStream = doc
             .into_iter()
             .intersperse(Literal::character('\n'))
