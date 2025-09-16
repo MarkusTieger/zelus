@@ -10,12 +10,14 @@ pub fn error_schema(id: &str, msg: &str) -> Schema {
 
     let mut id_obj = Object::with_type(Type::String);
     id_obj.example = Some(serde_json::Value::String(id.to_owned()));
+    id_obj.enum_values = Some(vec![serde_json::Value::String(id.to_owned())]);
     error
         .properties
         .insert("id".to_owned(), RefOr::T(Schema::Object(id_obj)));
 
     let mut msg_obj = Object::with_type(Type::String);
     msg_obj.example = Some(serde_json::Value::String(msg.to_owned()));
+    msg_obj.enum_values = Some(vec![serde_json::Value::String(msg.to_owned())]);
     error
         .properties
         .insert("msg".to_owned(), RefOr::T(Schema::Object(msg_obj)));
