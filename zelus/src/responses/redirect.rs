@@ -82,3 +82,12 @@ where
             .expect("axum::response::Redirect should always have a location header")
     }
 }
+
+impl<const CODE: u16> IntoResponse for Redirect<CODE>
+where
+    Self: RedirectStatusCode,
+{
+    fn into_response(self) -> axum::response::Response {
+        self.0.into_response()
+    }
+}
