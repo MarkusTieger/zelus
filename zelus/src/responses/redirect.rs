@@ -58,7 +58,11 @@ where
         responses = responses.response(
             CODE.to_string(),
             Response::builder()
-                .description(<Redirect<CODE>>::STATUS.as_str())
+                .description(
+                    <Redirect<CODE>>::STATUS
+                        .canonical_reason()
+                        .unwrap_or_else(|| <Redirect<CODE>>::STATUS.as_str()),
+                )
                 .build(),
         );
         E::openapi(responses, schemas)
