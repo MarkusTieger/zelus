@@ -24,7 +24,9 @@ use crate::service::args::ServiceArgs;
 use crate::service::parse::FunctionArgument;
 use crate::service::process::macros::MacroProcessResult;
 use crate::service::route::RouteArgs;
-use crate::service::utils::{TokenStreamArray, parse_function_argument, type_option, attribute_handle};
+use crate::service::utils::{
+    TokenStreamArray, attribute_handle, parse_function_argument, type_option,
+};
 use core::fmt::{Display, Formatter};
 use core::str::FromStr;
 use either::Either;
@@ -264,7 +266,8 @@ pub fn process(
         }
 
         let mut fn_arg_out_stripped: TokenStream = fn_arg_unmodified.clone();
-        let attributes = attribute_handle(emitter, ["special", "no_schema"], &mut fn_arg_out_stripped)?;
+        let attributes =
+            attribute_handle(emitter, ["special", "no_schema"], &mut fn_arg_out_stripped)?;
         let special = attributes[0];
         let no_schema = attributes[1];
 

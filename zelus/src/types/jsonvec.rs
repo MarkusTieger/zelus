@@ -18,8 +18,8 @@ use serde::ser::Error as _;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Cow;
 use utoipa::__dev::ComposeSchema;
-use utoipa::openapi::{RefOr, Schema};
 use utoipa::ToSchema;
+use utoipa::openapi::{RefOr, Schema};
 
 #[derive(Debug, Clone)]
 pub struct JsonVec<T: Clone>(pub Vec<T>);

@@ -113,7 +113,7 @@ impl ZelusRouter {
     }
 
     pub fn route(
-        mut self,
+        &mut self,
         path: &'static str,
         method: HttpMethod,
         (responses, operations, schemas): (
@@ -122,7 +122,7 @@ impl ZelusRouter {
             Vec<(String, RefOr<Schema>)>,
         ),
         router: MethodRouter,
-    ) -> Self {
+    ) -> &mut Self {
         self.1.push(RouterOperation::Route(Box::new(ZelusRoute {
             path,
             method,

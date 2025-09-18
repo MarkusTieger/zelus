@@ -151,7 +151,11 @@ pub fn parse_function_argument(
     ))
 }
 
-pub fn attribute_handle<const NUM: usize>(emitter: &mut Emitter, names: [&'static str; NUM], fn_arg_out_stripped: &mut TokenStream) -> Result<[bool; NUM], ()> {
+pub fn attribute_handle<const NUM: usize>(
+    emitter: &mut Emitter,
+    names: [&'static str; NUM],
+    fn_arg_out_stripped: &mut TokenStream,
+) -> Result<[bool; NUM], ()> {
     let mut skip = 0;
     let mut num = [false; NUM];
     let mut fn_arg = fn_arg_out_stripped.clone().into_iter();
@@ -164,23 +168,37 @@ pub fn attribute_handle<const NUM: usize>(emitter: &mut Emitter, names: [&'stati
         }
         let expect_group = fn_arg.next();
         let Some(TokenTree::Group(group)) = expect_group else {
-            emitter.emit(ErrorMessage::new(expect_group.unwrap_or(TokenTree::Punct(ch)).span(), "Expected brackets after # in function argument")
-                .note("The `#` indicates you want to set an attribute on the function argument"));
+            emitter.emit(
+                ErrorMessage::new(
+                    expect_group.unwrap_or(TokenTree::Punct(ch)).span(),
+                    "Expected brackets after # in function argument",
+                )
+                .note("The `#` indicates you want to set an attribute on the function argument"),
+            );
             return Err(());
         };
 
         if group.delimiter() != Delimiter::Bracket {
-            emitter.emit(ErrorMessage::new(group.span(), "Expected brackets after # in function argument")
-                .note("The '#' indicates you want to set an attribute on the function argument"));
+            emitter.emit(
+                ErrorMessage::new(
+                    group.span(),
+                    "Expected brackets after # in function argument",
+                )
+                .note("The '#' indicates you want to set an attribute on the function argument"),
+            );
             return Err(());
         }
-        let Some((value, _name)) = num.iter_mut().zip(names).find(|(_value, name)| name.eq(&group.stream().to_string())) else {
+        let Some((value, _name)) = num
+            .iter_mut()
+            .zip(names)
+            .find(|(_value, name)| name.eq(&group.stream().to_string()))
+        else {
             emitter.emit(
                 ErrorMessage::new(
                     ch.span()..group.span(),
                     "Unknown function argument attribute",
                 )
-                    .note("Currently only the `#[special]` and `#[no_schema]` attribute is supported"),
+                .note("Currently only the `#[special]` and `#[no_schema]` attribute is supported"),
             );
             return Err(());
         };
@@ -188,11 +206,7 @@ pub fn attribute_handle<const NUM: usize>(emitter: &mut Emitter, names: [&'stati
         skip += 2;
     }
 
-    *fn_arg_out_stripped = fn_arg_out_stripped
-        .clone()
-        .into_iter()
-        .skip(skip)
-        .collect();
+    *fn_arg_out_stripped = fn_arg_out_stripped.clone().into_iter().skip(skip).collect();
 
     Ok(num)
 }
