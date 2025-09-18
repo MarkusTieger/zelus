@@ -51,7 +51,7 @@ pub mod error;
 
 extern crate self as zelus;
 
-pub(crate) const SUCCESS_DESCRIPTION: &str = "Success";
+pub const SUCCESS_DESCRIPTION: &str = "Success";
 
 #[macro_export]
 macro_rules! define_path_variable {
