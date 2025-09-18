@@ -1,5 +1,5 @@
 use crate::SUCCESS_DESCRIPTION;
-use crate::responses::DocumentedResponse;
+use crate::responses::DocumentedResultResponse;
 use crate::types::DataStream;
 use axum::response::IntoResponse;
 use futures_util::TryStreamExt as _;
@@ -25,18 +25,17 @@ impl IntoResponse for FileResponse {
     }
 }
 
-impl<E: DocumentedResponse + 'static> DocumentedResponse for Result<FileResponse, E> {
+impl DocumentedResultResponse for FileResponse {
     fn openapi(
-        mut responses: ResponsesBuilder,
-        schemas: &mut HashMap<String, RefOr<Schema>>,
+        responses: ResponsesBuilder,
+        _schemas: &mut HashMap<String, RefOr<Schema>>,
     ) -> ResponsesBuilder {
-        responses = responses.response(
+        responses.response(
             "200",
             Response::builder()
                 .description(SUCCESS_DESCRIPTION)
                 .content("application/octet-stream", Content::builder().build())
                 .build(),
-        );
-        E::openapi(responses, schemas)
+        )
     }
 }

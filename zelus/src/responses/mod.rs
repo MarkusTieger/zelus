@@ -15,3 +15,21 @@ pub trait DocumentedResponse {
         schemas: &mut HashMap<String, RefOr<Schema>>,
     ) -> ResponsesBuilder;
 }
+
+pub trait DocumentedResultResponse {
+    fn openapi(
+        responses: ResponsesBuilder,
+        schemas: &mut HashMap<String, RefOr<Schema>>,
+    ) -> ResponsesBuilder;
+}
+
+impl<T: DocumentedResultResponse, E: DocumentedResponse + 'static> DocumentedResponse
+    for Result<T, E>
+{
+    fn openapi(
+        responses: ResponsesBuilder,
+        schemas: &mut HashMap<String, RefOr<Schema>>,
+    ) -> ResponsesBuilder {
+        E::openapi(T::openapi(responses, schemas), schemas)
+    }
+}

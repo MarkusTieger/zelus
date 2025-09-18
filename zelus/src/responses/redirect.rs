@@ -1,4 +1,4 @@
-use crate::responses::DocumentedResponse;
+use crate::responses::DocumentedResultResponse;
 use axum::response::IntoResponse;
 use http::header::LOCATION;
 use http::{HeaderValue, StatusCode};
@@ -46,26 +46,24 @@ impl RedirectStatusCode for Redirect<308> {
     }
 }
 
-impl<E: DocumentedResponse + 'static, const CODE: u16> DocumentedResponse
-    for Result<Redirect<CODE>, E>
+impl<const CODE: u16> DocumentedResultResponse for Redirect<CODE>
 where
-    Redirect<CODE>: RedirectStatusCode,
+    Self: RedirectStatusCode,
 {
     fn openapi(
-        mut responses: ResponsesBuilder,
-        schemas: &mut HashMap<String, RefOr<Schema>>,
+        responses: ResponsesBuilder,
+        _schemas: &mut HashMap<String, RefOr<Schema>>,
     ) -> ResponsesBuilder {
-        responses = responses.response(
+        responses.response(
             CODE.to_string(),
             Response::builder()
                 .description(
-                    <Redirect<CODE>>::STATUS
+                    Self::STATUS
                         .canonical_reason()
-                        .unwrap_or_else(|| <Redirect<CODE>>::STATUS.as_str()),
+                        .unwrap_or_else(|| Self::STATUS.as_str()),
                 )
                 .build(),
-        );
-        E::openapi(responses, schemas)
+        )
     }
 }
 

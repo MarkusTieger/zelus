@@ -1,25 +1,27 @@
 use crate::SUCCESS_DESCRIPTION;
-use crate::responses::DocumentedResponse;
+use crate::responses::DocumentedResultResponse;
 use crate::utils::MaybeUnit;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 use utoipa::openapi::schema::RefBuilder;
 use utoipa::openapi::{Content, RefOr, Response, ResponsesBuilder, Schema};
 
-impl<V: ToSchema + MaybeUnit + 'static, E: DocumentedResponse + 'static> DocumentedResponse
-    for Result<V, E>
-{
+impl<V: ToSchema + MaybeUnit + 'static> DocumentedResultResponse for V {
     fn openapi(
-        mut responses: ResponsesBuilder,
+        responses: ResponsesBuilder,
         schemas: &mut HashMap<String, RefOr<Schema>>,
     ) -> ResponsesBuilder {
         if V::unit().is_some() {
-            responses = responses.response(
+            responses.response(
                 "204",
                 Response::builder().description(SUCCESS_DESCRIPTION).build(),
-            );
+            )
         } else {
-            responses = responses.response(
+            let mut vals = Vec::new();
+            vals.push((V::name().to_string(), V::schema()));
+            V::schemas(&mut vals);
+            schemas.extend(vals);
+            responses.response(
                 "200",
                 Response::builder()
                     .description(SUCCESS_DESCRIPTION)
@@ -30,13 +32,7 @@ impl<V: ToSchema + MaybeUnit + 'static, E: DocumentedResponse + 'static> Documen
                         )),
                     )
                     .build(),
-            );
-            let mut vals = Vec::new();
-            vals.push((V::name().to_string(), V::schema()));
-            V::schemas(&mut vals);
-            schemas.extend(vals);
+            )
         }
-
-        E::openapi(responses, schemas)
     }
 }

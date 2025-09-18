@@ -1,4 +1,4 @@
-use crate::responses::DocumentedResponse;
+use crate::responses::DocumentedResultResponse;
 use axum::response::IntoResponse;
 use std::collections::HashMap;
 use utoipa::openapi::{RefOr, ResponsesBuilder, Schema};
@@ -11,11 +11,11 @@ impl IntoResponse for WebsocketResponse {
     }
 }
 
-impl<E: DocumentedResponse + 'static> DocumentedResponse for Result<WebsocketResponse, E> {
+impl DocumentedResultResponse for WebsocketResponse {
     fn openapi(
         responses: ResponsesBuilder,
         schemas: &mut HashMap<String, RefOr<Schema>>,
     ) -> ResponsesBuilder {
-        <Result<(), E>>::openapi(responses, schemas)
+        <()>::openapi(responses, schemas)
     }
 }
