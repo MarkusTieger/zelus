@@ -62,9 +62,7 @@ pub fn process(
             } else {
                 quote! {
                     .schema(Some(
-                                #crate_prefix utoipa::openapi::schema::RefBuilder::new()
-                                    .ref_location_from_schema_name(< #arg_type as #crate_prefix utoipa::ToSchema >::name())
-                                    .build()
+                                < #arg_type as #crate_prefix utoipa::PartialSchema >::schema()
                     ))
                 }
             };
