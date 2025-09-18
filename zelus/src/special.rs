@@ -1,6 +1,8 @@
+use crate::types::DocumentedType;
 use axum::extract::Request;
 use http::request::Parts;
 use reqwest::RequestBuilder;
+use utoipa::openapi::path::OperationBuilder;
 
 pub trait IntoRequestParts {
     fn into_request(self, req: RequestBuilder) -> impl Future<Output = RequestBuilder> + Send;
@@ -47,5 +49,11 @@ impl<E, T: OptionalFromRequest<E>> FromRequest<E> for Option<T> {
         Self: Sized,
     {
         T::from_request(req).await
+    }
+}
+
+impl<T: DocumentedType> DocumentedType for Option<T> {
+    fn openapi(operations: OperationBuilder) -> OperationBuilder {
+        T::openapi(operations)
     }
 }
