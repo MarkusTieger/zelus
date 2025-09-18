@@ -620,8 +620,10 @@ pub fn finish(
                     use #crate_prefix utoipa_axum::PathItemExt;
                     use #crate_prefix axum::routing::method_routing::MethodRouter;
 
-                    ZelusRouter::new()
-                        #routes
+                    let mut router = ZelusRouter::new();
+                    let _ = (&mut router)
+                        #routes;
+                    router
                 }
             }
         });
