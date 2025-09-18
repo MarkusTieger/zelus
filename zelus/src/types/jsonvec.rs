@@ -19,7 +19,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Cow;
 use utoipa::__dev::ComposeSchema;
 use utoipa::openapi::{RefOr, Schema};
-use utoipa::{PartialSchema, ToSchema};
+use utoipa::ToSchema;
 
 #[derive(Debug, Clone)]
 pub struct JsonVec<T: Clone>(pub Vec<T>);
@@ -58,12 +58,6 @@ impl<'de, T: for<'a> Deserialize<'a> + Clone> Deserialize<'de> for JsonVec<T> {
     }
 }
 
-impl<T: ToSchema + ComposeSchema + Clone> PartialSchema for JsonVec<T> {
-    fn schema() -> RefOr<Schema> {
-        <Vec<T>>::schema()
-    }
-}
-
 impl<T: ToSchema + ComposeSchema + Clone> ToSchema for JsonVec<T> {
     fn name() -> Cow<'static, str> {
         <Vec<T>>::name()
@@ -71,5 +65,11 @@ impl<T: ToSchema + ComposeSchema + Clone> ToSchema for JsonVec<T> {
 
     fn schemas(schemas: &mut Vec<(String, RefOr<Schema>)>) {
         <Vec<T>>::schemas(schemas);
+    }
+}
+
+impl<T: ToSchema + ComposeSchema + Clone> ComposeSchema for JsonVec<T> {
+    fn compose(new_generics: Vec<RefOr<Schema>>) -> RefOr<Schema> {
+        <Vec<T>>::compose(new_generics)
     }
 }
