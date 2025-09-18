@@ -13,7 +13,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 use manyhow::{Emitter, ErrorMessage};
-use proc_macro2::{Ident, Punct, Span, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Ident, Punct, Span, TokenStream, TokenTree};
 use quote::TokenStreamExt as _;
 use syn::Token;
 use syn::ext::IdentExt as _;
@@ -149,4 +149,50 @@ pub fn parse_function_argument(
         arg_type.iter().skip(1).cloned().collect(),
         trait_data.into_iter().collect(),
     ))
+}
+
+pub fn attribute_handle<const NUM: usize>(emitter: &mut Emitter, names: [&'static str; NUM], fn_arg_out_stripped: &mut TokenStream) -> Result<[bool; NUM], ()> {
+    let mut skip = 0;
+    let mut num = [false; NUM];
+    let mut fn_arg = fn_arg_out_stripped.clone().into_iter();
+    'handle: loop {
+        let Some(TokenTree::Punct(ch)) = fn_arg.next() else {
+            break 'handle;
+        };
+        if ch.as_char() != '#' {
+            break 'handle;
+        }
+        let expect_group = fn_arg.next();
+        let Some(TokenTree::Group(group)) = expect_group else {
+            emitter.emit(ErrorMessage::new(expect_group.unwrap_or(TokenTree::Punct(ch)).span(), "Expected brackets after # in function argument")
+                .note("The `#` indicates you want to set an attribute on the function argument"));
+            return Err(());
+        };
+
+        if group.delimiter() != Delimiter::Bracket {
+            emitter.emit(ErrorMessage::new(group.span(), "Expected brackets after # in function argument")
+                .note("The '#' indicates you want to set an attribute on the function argument"));
+            return Err(());
+        }
+        let Some((value, _name)) = num.iter_mut().zip(names).find(|(_value, name)| name.eq(&group.stream().to_string())) else {
+            emitter.emit(
+                ErrorMessage::new(
+                    ch.span()..group.span(),
+                    "Unknown function argument attribute",
+                )
+                    .note("Currently only the `#[special]` and `#[no_schema]` attribute is supported"),
+            );
+            return Err(());
+        };
+        *value = true;
+        skip += 2;
+    }
+
+    *fn_arg_out_stripped = fn_arg_out_stripped
+        .clone()
+        .into_iter()
+        .skip(skip)
+        .collect();
+
+    Ok(num)
 }

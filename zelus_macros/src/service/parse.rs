@@ -61,6 +61,7 @@ pub enum FunctionArgument {
     Path {
         variable_name: Ident,
         variable_type: TokenStream,
+        no_schema: bool,
     },
     Payload {
         variable_name: Ident,
@@ -71,5 +72,6 @@ pub enum FunctionArgument {
         variable_type_wopt: TokenStream,
         required: bool,
         desc: Option<LitStr>,
+        no_schema: bool,
     },
 }

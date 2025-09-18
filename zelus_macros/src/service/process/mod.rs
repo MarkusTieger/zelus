@@ -24,7 +24,7 @@ use crate::service::args::ServiceArgs;
 use crate::service::parse::FunctionArgument;
 use crate::service::process::macros::MacroProcessResult;
 use crate::service::route::RouteArgs;
-use crate::service::utils::{TokenStreamArray, parse_function_argument, type_option};
+use crate::service::utils::{TokenStreamArray, parse_function_argument, type_option, attribute_handle};
 use core::fmt::{Display, Formatter};
 use core::str::FromStr;
 use either::Either;
@@ -220,8 +220,8 @@ pub fn process(
 
     for (fn_index, fn_arg) in fn_args_array.0.into_iter().enumerate() {
         let fn_arg_unmodified = fn_arg.clone();
-        let mut fn_arg = fn_arg.into_iter();
         if fn_index == 0 {
+            let mut fn_arg = fn_arg.into_iter();
             let Some(TokenTree::Punct(punct)) = fn_arg.next() else {
                 emitter.emit(ErrorMessage::new(
                     proc_macro::TokenStream::from(fn_arg_unmodified),
@@ -263,50 +263,16 @@ pub fn process(
             continue;
         }
 
-        let (fn_arg_name, fn_arg_type, special) = match fn_arg.next() {
-            Some(TokenTree::Punct(ch)) if ch.as_char() == '#' => {
-                let expect_group = fn_arg.next();
-                let Some(TokenTree::Group(group)) = expect_group else {
-                    emitter.emit(ErrorMessage::new(expect_group.unwrap_or(TokenTree::Punct(ch)).span(), "Expected brackets after # in function argument")
-                        .note("The `#` indicates you want to set an attribute on the function argument"));
-                    return Err(());
-                };
+        let mut fn_arg_out_stripped: TokenStream = fn_arg_unmodified.clone();
+        let attributes = attribute_handle(emitter, ["special", "no_schema"], &mut fn_arg_out_stripped)?;
+        let special = attributes[0];
+        let no_schema = attributes[1];
 
-                if group.delimiter() != Delimiter::Bracket {
-                    emitter.emit(ErrorMessage::new(group.span(), "Expected brackets after # in function argument")
-                        .note("The '#' indicates you want to set an attribute on the function argument"));
-                    return Err(());
-                }
-                if !group.stream().to_string().eq("special") {
-                    emitter.emit(
-                        ErrorMessage::new(
-                            ch.span()..group.span(),
-                            "Unknown function argument attribute",
-                        )
-                        .note("Currently only the `#[special]` attribute is supported"),
-                    );
-                    return Err(());
-                }
+        let (fn_arg_name, fn_arg_type, trait_arg_out) =
+            parse_function_argument(emitter, fn_arg_out_stripped.clone(), fn_index)?;
 
-                let fn_arg_out_stripped: TokenStream =
-                    fn_arg_unmodified.clone().into_iter().skip(2).collect();
-
-                let (fn_arg_name, fn_arg_type, trait_arg_out) =
-                    parse_function_argument(emitter, fn_arg_out_stripped.clone(), fn_index)?;
-
-                fn_args_out.extend(quote! { #trait_arg_out, });
-                fn_args_impl_out.extend(quote! { #fn_arg_out_stripped, });
-
-                (fn_arg_name, fn_arg_type, true)
-            }
-            _ => {
-                let (fn_arg_name, fn_arg_type, trait_arg_out) =
-                    parse_function_argument(emitter, fn_arg_unmodified.clone(), fn_index)?;
-                fn_args_out.extend(quote! { #trait_arg_out, });
-                fn_args_impl_out.extend(quote! { #fn_arg_unmodified, });
-                (fn_arg_name, fn_arg_type, false)
-            }
-        };
+        fn_args_out.extend(quote! { #trait_arg_out, });
+        fn_args_impl_out.extend(quote! { #fn_arg_out_stripped, });
 
         let (fn_arg_type_opt, fn_arg_type_opt_used) = type_option(fn_arg_type.clone());
 
@@ -319,6 +285,7 @@ pub fn process(
             fn_args_identified.push(FunctionArgument::Path {
                 variable_name: fn_arg_name,
                 variable_type: fn_arg_type,
+                no_schema,
             });
         } else if let Some(desc) = query.get(&fn_arg_name.to_string()) {
             fn_args_identified.push(FunctionArgument::Query {
@@ -326,6 +293,7 @@ pub fn process(
                 variable_type_wopt: fn_arg_type,
                 required: !fn_arg_type_opt_used,
                 desc: desc.clone(),
+                no_schema,
             });
         } else if fn_arg_type_opt
             .clone()

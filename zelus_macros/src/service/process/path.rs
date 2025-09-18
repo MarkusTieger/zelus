@@ -37,9 +37,10 @@ pub fn process(
             if let FunctionArgument::Path {
                 variable_name,
                 variable_type,
+                no_schema,
             } = arg
             {
-                Some((variable_name.clone(), variable_type.clone()))
+                Some((variable_name.clone(), variable_type.clone(), *no_schema))
             } else {
                 None
             }
@@ -52,9 +53,21 @@ pub fn process(
         let mut path_names = TokenStream::new();
         let mut path_types = TokenStream::new();
 
-        for (arg_name, arg_type) in &fn_args_path {
+        for (arg_name, arg_type, no_schema) in &fn_args_path {
             path_names.extend(quote! { #arg_name, });
             path_types.extend(quote! { #arg_type, });
+
+            let schema_if = if *no_schema {
+                TokenStream::new()
+            } else {
+                quote! {
+                    .schema(Some(
+                                #crate_prefix utoipa::openapi::schema::RefBuilder::new()
+                                    .ref_location_from_schema_name(< #arg_type as #crate_prefix utoipa::ToSchema >::name())
+                                    .build()
+                    ))
+                }
+            };
 
             let variable_literal = LitStr::new(&arg_name.to_string(), arg_name.span());
             operations.extend(quote! {
@@ -64,19 +77,17 @@ pub fn process(
                     )
                     .parameter_in(#crate_prefix utoipa::openapi::path::ParameterIn::Path)
                     .description(Some([< variable_path_ #arg_name:snake >]::DESCRIPTION))
-                    .schema(Some(
-                                #crate_prefix utoipa::openapi::schema::RefBuilder::new()
-                                    .ref_location_from_schema_name(< #arg_type as #crate_prefix utoipa::ToSchema >::name())
-                                    .build()
-                    )),
+                    #schema_if,
                 );
             });
-            schema_extra.extend(quote! {
-                schemas.insert(< #arg_type as #crate_prefix utoipa::ToSchema >::name().to_string(), < #arg_type as #crate_prefix utoipa::PartialSchema >::schema());
-                let mut schemas_vec = Vec::new();
-                < #arg_type as #crate_prefix utoipa::ToSchema >::schemas(&mut schemas_vec);
-                schemas.extend(schemas_vec);
-            });
+            if !*no_schema {
+                schema_extra.extend(quote! {
+                    schemas.insert(< #arg_type as #crate_prefix utoipa::ToSchema >::name().to_string(), < #arg_type as #crate_prefix utoipa::PartialSchema >::schema());
+                    let mut schemas_vec = Vec::new();
+                    < #arg_type as #crate_prefix utoipa::ToSchema >::schemas(&mut schemas_vec);
+                    schemas.extend(schemas_vec);
+                });
+            }
 
             fn_def_args.extend(quote! { #arg_name: #arg_type, });
             fn_def_call.extend(quote! { #arg_name, });
