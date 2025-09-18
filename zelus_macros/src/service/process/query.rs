@@ -25,6 +25,7 @@ pub fn process(
     http_args: &mut TokenStream,
     func_args: &mut Vec<TokenStream>,
     operations: &mut TokenStream,
+    schema_extra: &mut TokenStream,
     client_def_body: &mut TokenStream,
     fn_def_args: &mut TokenStream,
     fn_def_call: &mut TokenStream,
@@ -83,8 +84,19 @@ pub fn process(
                     )
                     .parameter_in(#crate_prefix utoipa::openapi::path::ParameterIn::Query)
                     .description(Some(#desc))
+                    .schema(Some(
+                                #crate_prefix utoipa::openapi::schema::RefBuilder::new()
+                                    .ref_location_from_schema_name(< #arg_type as #crate_prefix utoipa::ToSchema >::name())
+                                    .build()
+                    ))
                     .required(#crate_prefix utoipa::openapi::Required::#required_indent),
                 );
+            });
+            schema_extra.extend(quote! {
+                schemas.insert(< #arg_type as #crate_prefix utoipa::ToSchema >::name().to_string(), < #arg_type as #crate_prefix utoipa::PartialSchema >::schema());
+                let mut schemas_vec = Vec::new();
+                < #arg_type as #crate_prefix utoipa::ToSchema >::schemas(&mut schemas_vec);
+                schemas.extend(schemas_vec);
             });
 
             fn_def_args.extend(quote! { #arg_name: #arg_type, });
