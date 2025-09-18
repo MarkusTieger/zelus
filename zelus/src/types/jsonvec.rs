@@ -16,6 +16,10 @@ use core::ops::{Deref, DerefMut};
 use serde::de::Error as _;
 use serde::ser::Error as _;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::borrow::Cow;
+use utoipa::__dev::ComposeSchema;
+use utoipa::openapi::{RefOr, Schema};
+use utoipa::{PartialSchema, ToSchema};
 
 #[derive(Debug, Clone)]
 pub struct JsonVec<T: Clone>(pub Vec<T>);
@@ -51,5 +55,21 @@ impl<'de, T: for<'a> Deserialize<'a> + Clone> Deserialize<'de> for JsonVec<T> {
         D: Deserializer<'de>,
     {
         serde_json::from_str(<&str>::deserialize(deserializer)?).map_err(D::Error::custom)
+    }
+}
+
+impl<T: ToSchema + ComposeSchema + Clone> PartialSchema for JsonVec<T> {
+    fn schema() -> RefOr<Schema> {
+        <Vec<T>>::schema()
+    }
+}
+
+impl<T: ToSchema + ComposeSchema + Clone> ToSchema for JsonVec<T> {
+    fn name() -> Cow<'static, str> {
+        <Vec<T>>::name()
+    }
+
+    fn schemas(schemas: &mut Vec<(String, RefOr<Schema>)>) {
+        <Vec<T>>::schemas(schemas);
     }
 }
