@@ -120,7 +120,7 @@ pub struct ProcessedFunction {
     result: TokenStream,
     schema_extra: TokenStream,
     routes_selection: Vec<Ident>,
-    fn_args: TokenTree,
+    fn_args_impl: Group,
     function_impl: Option<Group>,
 }
 
@@ -535,7 +535,7 @@ pub fn process(
         result,
         schema_extra,
         routes_selection,
-        fn_args,
+        fn_args_impl,
         function_impl: end.right(),
     });
 
@@ -567,8 +567,9 @@ pub fn finish(
         schema_extra,
         client_impl,
         client_def,
-        fn_args,
+        fn_args_impl,
         function_impl,
+        ..
     } in functions
     {
         client_impl_merged.extend(client_impl);
@@ -614,7 +615,7 @@ pub fn finish(
 
         if let Some(function_impl) = function_impl {
             impl_tokens.extend(quote! {
-                async fn #fn_ident #fn_args -> #result #function_impl
+                async fn #fn_ident #fn_args_impl -> #result #function_impl
             });
         }
     }
