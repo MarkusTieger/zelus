@@ -193,9 +193,9 @@ pub fn process(
                     Literal::string("")
                 } else {
                     Literal::string(&regex_replace_all!(
-                        "\\[\\`(.*)\\`\\]",
+                        "\\[(\\`[A-Za-z0-9:\\(\\)\\{\\}\\.;_-]+\\`)\\]",
                         &str.value(),
-                        |_, inner| format!("`{inner}`")
+                        |_, inner: &str| inner.to_owned()
                     ))
                 }
             })
